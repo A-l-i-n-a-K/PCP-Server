@@ -1,6 +1,5 @@
 package com.fitquest.fitquest_backend.controller;
 
-import com.fitquest.fitquest_backend.model.SportsmanProfile;
 import com.fitquest.fitquest_backend.model.User;
 import com.fitquest.fitquest_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
