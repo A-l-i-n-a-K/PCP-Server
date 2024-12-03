@@ -1,5 +1,6 @@
 package com.fitquest.fitquest_backend.controller;
 
+import com.fitquest.fitquest_backend.model.SportsmanProfile;
 import com.fitquest.fitquest_backend.model.User;
 import com.fitquest.fitquest_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,5 +23,14 @@ public class UserController {
     @GetMapping("/users")
     List<User> getAllUsers(){
         return userRepository.findAll();
+    }
+
+    @GetMapping("/users/{id}")
+    public User getUserById(@PathVariable Long id){
+        try{ return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Профиль не найден для ID: " + id));
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при получении профиля: " + e.getMessage(), e);
+        }
     }
 }
