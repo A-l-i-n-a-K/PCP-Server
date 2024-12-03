@@ -17,8 +17,8 @@ public class SportsmanProfile {
     private Gender gender;
     private SportType sport;
     private Long coachId;
-    private String profilePhoto;
-    private String fio;  // Новое поле для ФИО
+    private String profilePhoto;  // Хранит Base64 строку для фото
+    private String fio; // Новое поле для ФИО
 
     // Getters and Setters
     public Long getId() {

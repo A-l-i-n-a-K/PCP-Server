@@ -22,68 +22,67 @@ public class SportsmanProfileController {
     private SportsmanProfileRepository sportsmanProfileRepository;
 
     @Autowired
-    private UserRepository userRepository; // Подключение к репозиторию пользователей
+    private UserRepository userRepository;
 
-    // Получение профиля по ID или создание нового профиля, если его нет
+    // Получение профиля по ID или создание нового профиля
     @GetMapping("/{id}")
     public ResponseEntity<SportsmanProfile> getProfileById(@PathVariable Long id) {
         try {
-            // Попытка найти профиль по ID
             SportsmanProfile profile = sportsmanProfileRepository.findById(id).orElse(null);
 
             if (profile == null) {
-                // Если профиль не найден, создаем новый профиль с дефолтными значениями
                 profile = createDefaultProfile(id);
-                sportsmanProfileRepository.save(profile); // Сохраняем новый профиль
+                sportsmanProfileRepository.save(profile);
             }
 
-            // Возвращаем профиль
             return ResponseEntity.ok(profile);
         } catch (Exception e) {
-            // Логирование ошибки и возврат статуса 500
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
     // Метод для создания нового профиля с дефолтными значениями
     private SportsmanProfile createDefaultProfile(Long id) {
         SportsmanProfile newProfile = new SportsmanProfile();
-
-        // Получаем пользователя по ID из базы данных
         Optional<User> userOptional = userRepository.findById(id);
 
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             newProfile.setId(id);
-            newProfile.setName(user.getName()); // Логин из данных пользователя
-            newProfile.setEmail(user.getEmail()); // Почта из данных пользователя
+            newProfile.setName(user.getName());
+            newProfile.setEmail(user.getEmail());
         } else {
-            // Если пользователь не найден, создаем профиль с дефолтными значениями
-            newProfile.setName(""); // Логин по умолчанию
-            newProfile.setEmail(""); // Почта по умолчанию
+            newProfile.setName("");
+            newProfile.setEmail("");
         }
 
         newProfile.setFio("ФИО");
         newProfile.setAge(0);
         newProfile.setPhone("+375330000000");
-        newProfile.setGender(Gender.MALE); // Пол по умолчанию
+        newProfile.setGender(Gender.MALE);
         newProfile.setSport(SportType.ATHLETICS);
-        newProfile.setCoachId(null); // ID тренера может быть пустым
-        newProfile.setProfilePhoto(""); // Пустая ссылка на фото
-
+        newProfile.setCoachId(null);
+        newProfile.setProfilePhoto(""); // Пустая строка по умолчанию
         return newProfile;
     }
 
-    @PostMapping("/sportsmanProfileData")
-    public SportsmanProfile newSportsmanProfile(@RequestBody SportsmanProfile newSportsmanProfile) {
-        return sportsmanProfileRepository.save(newSportsmanProfile);
-    }
-
     // Обновление профиля
-    @PostMapping("/updateSportsmanProfile")
-    public SportsmanProfile updateProfile(@RequestBody SportsmanProfile updatedProfile) {
-        return sportsmanProfileRepository.save(updatedProfile);
+    @PutMapping("/sportsmanProfileData/{id}")
+    public SportsmanProfile updateSportsmanProfile(@RequestBody SportsmanProfile newSportsmanProfile, @PathVariable Long id) {
+        return sportsmanProfileRepository.findById(id)
+                .map(sportsmanProfile -> {
+                    sportsmanProfile.setName(newSportsmanProfile.getName());
+                    sportsmanProfile.setFio(newSportsmanProfile.getFio());
+                    sportsmanProfile.setAge(newSportsmanProfile.getAge());
+                    sportsmanProfile.setEmail(newSportsmanProfile.getEmail());
+                    sportsmanProfile.setPhone(newSportsmanProfile.getPhone());
+                    sportsmanProfile.setGender(newSportsmanProfile.getGender());
+                    sportsmanProfile.setSport(newSportsmanProfile.getSport());
+                    sportsmanProfile.setCoachId(newSportsmanProfile.getCoachId());
+                    sportsmanProfile.setProfilePhoto(newSportsmanProfile.getProfilePhoto()); // Сохраняем новое фото
+                    return sportsmanProfileRepository.save(sportsmanProfile);
+                })
+                .orElseThrow(() -> new RuntimeException("Профиль не найден для ID: " + id));
     }
 }

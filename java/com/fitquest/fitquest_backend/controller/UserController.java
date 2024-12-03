@@ -33,4 +33,13 @@ public class UserController {
             throw new RuntimeException("Ошибка при получении профиля: " + e.getMessage(), e);
         }
     }
+    @PutMapping("/user/{id}")
+    public User updateUser(@RequestBody User newUser, @PathVariable Long id) {
+        return userRepository.findById(id)
+                .map(user -> {
+                    user.setEmail(newUser.getEmail());
+                    return userRepository.save(user);
+                })
+                .orElseThrow(() -> new RuntimeException("Профиль не найден для ID: " + id));
+    }
 }
