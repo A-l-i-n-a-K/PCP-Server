@@ -5,10 +5,13 @@ import com.fitquest.fitquest_backend.model.User;
 import com.fitquest.fitquest_backend.model.enums.Gender;
 import com.fitquest.fitquest_backend.model.enums.SportType;
 import com.fitquest.fitquest_backend.repository.SportsmanProfileRepository;
+import com.fitquest.fitquest_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/sportsmanProfile")
@@ -17,6 +20,9 @@ public class SportsmanProfileController {
 
     @Autowired
     private SportsmanProfileRepository sportsmanProfileRepository;
+
+    @Autowired
+    private UserRepository userRepository; // Подключение к репозиторию пользователей
 
     // Получение профиля по ID или создание нового профиля, если его нет
     @GetMapping("/{id}")
@@ -44,16 +50,29 @@ public class SportsmanProfileController {
     // Метод для создания нового профиля с дефолтными значениями
     private SportsmanProfile createDefaultProfile(Long id) {
         SportsmanProfile newProfile = new SportsmanProfile();
-        newProfile.setId(id);
-        newProfile.setName(""); // Логин по умолчанию
+
+        // Получаем пользователя по ID из базы данных
+        Optional<User> userOptional = userRepository.findById(id);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            newProfile.setId(id);
+            newProfile.setName(user.getName()); // Логин из данных пользователя
+            newProfile.setEmail(user.getEmail()); // Почта из данных пользователя
+        } else {
+            // Если пользователь не найден, создаем профиль с дефолтными значениями
+            newProfile.setName(""); // Логин по умолчанию
+            newProfile.setEmail(""); // Почта по умолчанию
+        }
+
         newProfile.setFio("ФИО");
         newProfile.setAge(0);
-        newProfile.setEmail(""); // Почта по умолчанию
         newProfile.setPhone("+375330000000");
         newProfile.setGender(Gender.MALE); // Пол по умолчанию
         newProfile.setSport(SportType.ATHLETICS);
         newProfile.setCoachId(null); // ID тренера может быть пустым
         newProfile.setProfilePhoto(""); // Пустая ссылка на фото
+
         return newProfile;
     }
 
