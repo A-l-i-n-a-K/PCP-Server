@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -85,4 +86,17 @@ public class ProfileController {
                 })
                 .orElseThrow(() -> new RuntimeException("Профиль не найден для ID: " + id));
     }
+
+    // Получить всех спортсменов для конкретного тренера
+    @GetMapping("/coach/{coachId}")
+    public ResponseEntity<List<Profile>> getSportsmenByCoach(@PathVariable Long coachId) {
+        try {
+            List<Profile> sportsmen = sportsmanProfileRepository.findByCoachId(coachId);
+            return ResponseEntity.ok(sportsmen);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
 }
