@@ -22,8 +22,8 @@ public class SportsmanDataController {
     }
 
     @GetMapping("/datas")
-    List<SportsmanData> getAllSportsmanData(){
-        return sportsmanRepository.findAll();
+    public List<SportsmanData> getSportsmanDataBySportsmanId(@RequestParam Long sportsmanId) {
+        return sportsmanRepository.findBySportsmanId(sportsmanId);
     }
 
     @GetMapping("/datas/{dataId}")
@@ -35,15 +35,40 @@ public class SportsmanDataController {
         }
     }
 
-    @PutMapping("/data/{dataId}")
-    public SportsmanData updateSportsmanData(@RequestBody SportsmanData newSportsmanData, @PathVariable SportsmanDataId dataId) {
-        return sportsmanRepository.findById(dataId)
+    @PutMapping("/data/{sportsmanId}/{dataId}")
+    public SportsmanData updateSportsmanData(@RequestBody SportsmanData newSportsmanData,
+                                             @PathVariable Long sportsmanId,
+                                             @PathVariable Long dataId) {
+        // Создаем составной ключ для поиска
+        SportsmanDataId sportsmanDataId = new SportsmanDataId();
+        sportsmanDataId.setSportsmanId(sportsmanId);
+        sportsmanDataId.setDataId(dataId);
+
+        // Ищем данные по составному ключу
+        return sportsmanRepository.findById(sportsmanDataId)
                 .map(sportsmanData -> {
-                    sportsmanData.setIndicator(newSportsmanData.getIndicator());
+                    // Обновляем только те поля, которые приходят в запросе
                     sportsmanData.setMeaning(newSportsmanData.getMeaning());
                     sportsmanData.setDate(newSportsmanData.getDate());
+                    // Сохраняем обновленные данные в базе
                     return sportsmanRepository.save(sportsmanData);
                 })
-                .orElseThrow(() -> new RuntimeException("Данные не найдены для ID: " + dataId));
+                .orElseThrow(() -> new RuntimeException("Данные не найдены для ID: " + sportsmanDataId));
     }
+
+    @DeleteMapping("/data/{sportsmanId}/{dataId}")
+    public void deleteSportsmanData(@PathVariable Long sportsmanId, @PathVariable Long dataId) {
+        SportsmanDataId sportsmanDataId = new SportsmanDataId();
+        sportsmanDataId.setSportsmanId(sportsmanId);
+        sportsmanDataId.setDataId(dataId);
+
+        sportsmanRepository.findById(sportsmanDataId)
+                .ifPresentOrElse(sportsmanData -> {
+                    sportsmanRepository.delete(sportsmanData);
+                }, () -> {
+                    throw new RuntimeException("Данные не найдены для ID: " + sportsmanDataId);
+                });
+    }
+
+
 }
