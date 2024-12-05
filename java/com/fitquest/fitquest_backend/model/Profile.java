@@ -17,7 +17,7 @@ public class Profile {
     private Gender gender;
     private SportType sport;
     private Long coachId;
-    private String profilePhoto;  // Хранит Base64 строку для фото
+    private String profilePhoto = "def.png";  // Хранит Base64 строку для фото
     private String fio; // Новое поле для ФИО
 
     // Getters and Setters

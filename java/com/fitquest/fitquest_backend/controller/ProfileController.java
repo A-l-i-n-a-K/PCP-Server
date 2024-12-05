@@ -70,22 +70,34 @@ public class ProfileController {
 
     // Обновление профиля
     @PutMapping("/ProfileData/{id}")
-    public Profile updateSportsmanProfile(@RequestBody Profile newSportsmanProfile, @PathVariable Long id) {
-        return sportsmanProfileRepository.findById(id)
-                .map(sportsmanProfile -> {
-                    sportsmanProfile.setName(newSportsmanProfile.getName());
-                    sportsmanProfile.setFio(newSportsmanProfile.getFio());
-                    sportsmanProfile.setAge(newSportsmanProfile.getAge());
-                    sportsmanProfile.setEmail(newSportsmanProfile.getEmail());
-                    sportsmanProfile.setPhone(newSportsmanProfile.getPhone());
-                    sportsmanProfile.setGender(newSportsmanProfile.getGender());
-                    sportsmanProfile.setSport(newSportsmanProfile.getSport());
-                    sportsmanProfile.setCoachId(newSportsmanProfile.getCoachId());
-                    sportsmanProfile.setProfilePhoto(newSportsmanProfile.getProfilePhoto()); // Сохраняем новое фото
-                    return sportsmanProfileRepository.save(sportsmanProfile);
-                })
-                .orElseThrow(() -> new RuntimeException("Профиль не найден для ID: " + id));
+    public ResponseEntity<?> updateSportsmanProfile(@RequestBody Profile newSportsmanProfile, @PathVariable Long id) {
+        try {
+            Profile updatedProfile = sportsmanProfileRepository.findById(id)
+                    .map(sportsmanProfile -> {
+                        sportsmanProfile.setName(newSportsmanProfile.getName());
+                        sportsmanProfile.setFio(newSportsmanProfile.getFio());
+                        sportsmanProfile.setAge(newSportsmanProfile.getAge());
+                        sportsmanProfile.setEmail(newSportsmanProfile.getEmail());
+                        sportsmanProfile.setPhone(newSportsmanProfile.getPhone());
+                        sportsmanProfile.setGender(newSportsmanProfile.getGender());
+                        sportsmanProfile.setSport(newSportsmanProfile.getSport());
+                        sportsmanProfile.setCoachId(newSportsmanProfile.getCoachId());
+
+                        if (newSportsmanProfile.getProfilePhoto() != null) {
+                            sportsmanProfile.setProfilePhoto(newSportsmanProfile.getProfilePhoto());
+                        }
+
+                        return sportsmanProfileRepository.save(sportsmanProfile);
+                    })
+                    .orElseThrow(() -> new RuntimeException("Профиль не найден для ID: " + id));
+
+            return ResponseEntity.ok(updatedProfile);
+        } catch (Exception e) {
+            e.printStackTrace(); // Выводим ошибку в лог
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка обновления профиля: " + e.getMessage());
+        }
     }
+
 
     // Получить всех спортсменов для конкретного тренера
     @GetMapping("/coach/{coachId}")
